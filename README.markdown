@@ -7,6 +7,16 @@ excluded).  To try it out, open TextEdit and play with it.
 It's still pretty rough at the moment -- most edge cases aren't handled properly.
 Pasting in particular is not properly working yet.
 
+Installation
+------------
+
+Grab it with Mercurial or Git:
+
+    hg clone http://bitbucket.org/sjl/keymando-vim "~/Library/Application Support/Keymando/Plugins/vim"
+    git clone http://github.org/sjl/keymando-vim.git "~/Library/Application Support/Keymando/Plugins/vim"
+
+Reload your Keymando config.  You're now in normal mode.
+
 Current Features
 ----------------
 
