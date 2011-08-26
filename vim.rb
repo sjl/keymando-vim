@@ -8,106 +8,96 @@ class Vim < Plugin
   def before
   end
 
-  def fire(key)
-      fn = Vim.maps[Vim.mode][key]
-      if fn
-          fn.call()
-      else
-          send(key)
-      end
+  def growl(msg)
+      system('/usr/local/bin/growlnotify -m "" -a Keymando ' + msg)
   end
 
   def tomode(m)
       oldmap = Vim.maps[Vim.mode]
       newmap = Vim.maps[m]
 
-      oldmap.keys.each do |k|
-          #unmap k
+      except /iTerm/, /MacVim/, /Firefox/, /PeepOpen/, /Quicksilver/, /1Password/, /Alfred/ do
+          oldmap.keys.each do |k|
+              unmap(k)
+          end
+
+          newmap.keys.each do |k|
+              map(k, lambda { Vim.maps[Vim.mode][k].call() })
+          end
       end
 
-      newmap.keys.each do |k|
-          #map(k, lambda { self.fire(k) })
-      end
+      Vim.mode = m
   end
 
-  def toggle()
+  def toggle
       if Vim.mode == 'disabled'
           Vim.mode = Vim.oldmode
-          system '/usr/local/bin/growlnotify -m "" -a Keymando Vim mode enabled.'
+          self.growl('Keymando Vim mode enabled.')
       else
           Vim.oldmode = Vim.mode
           Vim.mode = 'disabled'
-          system '/usr/local/bin/growlnotify -m "" -a Keymando Vim mode disabled.'
+          self.growl('Keymando Vim mode disabled.')
       end
   end
 
   def after
-      except /iTerm/, /MacVim/, /Firefox/, /PeepOpen/, /Quicksilver/, /1Password/, /Alfred/ do
-          Vim.maps['disabled'] = {}
-          Vim.maps['n'] = {
-              'h' => lambda { send("<Left>") },
-              'j' => lambda { send("<Down>") },
-              'k' => lambda { send("<Up>") },
-              'l' => lambda { send("<Right>") },
+      Vim.maps['disabled'] = {}
+      Vim.maps['n'] = {
+          'h' => lambda { send("<Left>") },
+          'j' => lambda { send("<Down>") },
+          'k' => lambda { send("<Up>") },
+          'l' => lambda { send("<Right>") },
 
-              'w' => lambda { send("<Alt-Right><Alt-Right><Alt-Left>") },
-              'b' => lambda { send("<Alt-Left>") },
-              'e' => lambda { send("<Alt-Right>") },
-              '0' => lambda { send("<Cmd-Left>") },
+          'w' => lambda { send("<Alt-Right><Alt-Right><Alt-Left>") },
+          'b' => lambda { send("<Alt-Left>") },
+          'e' => lambda { send("<Alt-Right>") },
+          '0' => lambda { send("<Cmd-Left>") },
 
-              'i' => lambda { Vim.mode = 'i' },
-              'a' => lambda { Vim.mode = 'i'; send("<Right>") },
-              'A' => lambda { Vim.mode = 'i'; send("<Ctrl-e>") },
-              'I' => lambda { Vim.mode = 'i'; send("<Ctrl-a>") },
-              'o' => lambda { Vim.mode = 'i'; send("<Cmd-Right><Return>") },
-              'O' => lambda { Vim.mode = 'i'; send("<Cmd-Left><Return><Up>") },
+          'i' => lambda { self.tomode('i') },
+          'a' => lambda { self.tomode('i'); send("<Right>") },
+          'A' => lambda { self.tomode('i'); send("<Ctrl-e>") },
+          'I' => lambda { self.tomode('i'); send("<Ctrl-a>") },
+          'o' => lambda { self.tomode('i'); send("<Cmd-Right><Return>") },
+          'O' => lambda { self.tomode('i'); send("<Cmd-Left><Return><Up>") },
 
-              'd' => lambda { Vim.mode = 'od' },
-              'c' => lambda { Vim.mode = 'oc' },
+          'd' => lambda { self.tomode('od') },
+          'c' => lambda { self.tomode('oc') },
 
-              'p' => lambda { send("<Cmd-Left><Down><Cmd-v>") },
-              'P' => lambda { send("<Cmd-Left><Cmd-v>") },
+          'p' => lambda { send("<Cmd-Left><Down><Cmd-v>") },
+          'P' => lambda { send("<Cmd-Left><Cmd-v>") },
 
-              'u' => lambda { send("<Cmd-z>") },
-              '<Ctrl-R>' => lambda { send("<Shift-Cmd-z>") },
+          'u' => lambda { send("<Cmd-z>") },
+          '<Ctrl-R>' => lambda { send("<Shift-Cmd-z>") },
 
-              'x' => lambda { send("<Shift-Right><Cmd-x>") },
-              's' => lambda { send("<Shift-Right><Cmd-x>"); Vim.mode = 'i' },
+          'x' => lambda { send("<Shift-Right><Cmd-x>") },
+          's' => lambda { send("<Shift-Right><Cmd-x>"); self.tomode('i') },
+      }
+      Vim.maps['i'] = {
+          '<Ctrl-[>' => lambda { self.tomode('n') },
+          '<Escape>' => lambda { self.tomode('n') },
+          'jk' => lambda { self.tomode('n') },
+      }
+      Vim.maps['od'] = {
+          'w'  => lambda { send("<Shift-Alt-Right><Cmd-x>"); self.tomode('n') },
+          'b'  => lambda { send("<Shift-Alt-Left><Cmd-x>"); self.tomode('n') },
+          'd'  => lambda { send("<Cmd-Left><Shift-Down><Cmd-x>"); self.tomode('n') },
 
-              '<Escape>' => lambda { send("<Escape>") },
-          }
-          Vim.maps['i'] = {
-              '<Ctrl-[>' => lambda { Vim.mode = 'n' },
-              '<Escape>' => lambda { Vim.mode = 'n' },
-          }
-          Vim.maps['od'] = {
-              'w'  => lambda { send("<Shift-Alt-Right><Cmd-x>"); Vim.mode = 'n' },
-              'b'  => lambda { send("<Shift-Alt-Left><Cmd-x>"); Vim.mode = 'n' },
-              'd'  => lambda { send("<Cmd-Left><Shift-Down><Cmd-x>"); Vim.mode = 'n' },
+          'iw' => lambda { send("<Alt-Right><Shift-Alt-Left><Delete>"); self.tomode('n') },
 
-              #'iw' => lambda { send("<Alt-Right><Shift-Alt-Left><Delete>"); Vim.mode = 'n' },
+          '<Escape>' => lambda { self.tomode('n') },
+      }
+      Vim.maps['oc'] = {
+          'w' => lambda { send("<Shift-Alt-Right><Cmd-x>"); self.tomode('i') },
+          'b'  => lambda { send("<Shift-Alt-Left><Cmd-x>"); self.tomode('i') },
+          'c' => lambda { send("<Cmd-Left><Shift-Down><Cmd-x><Return><Up>"); self.tomode('i') },
 
-              '<Escape>' => lambda { Vim.mode = 'n' },
-          }
-          Vim.maps['oc'] = {
-              'w' => lambda { send("<Shift-Alt-Right><Cmd-x>"); Vim.mode = 'i' },
-              'b'  => lambda { send("<Shift-Alt-Left><Cmd-x>"); Vim.mode = 'i' },
-              'c' => lambda { send("<Cmd-Left><Shift-Down><Cmd-x><Return><Up>"); Vim.mode = 'i' },
+          'iw' => lambda { send("<Alt-Right><Shift-Alt-Left><Delete>"); self.tomode('i') },
 
-              #'iw' => lambda { send("<Alt-Right><Shift-Alt-Left><Delete>"); Vim.mode = 'i' },
-
-              '<Escape>' => lambda { Vim.mode = 'n' },
-          }
-
-          keys = Vim.maps.values.reduce([]) do |l, m|
-              l = l + m.keys
-          end
-          keys.uniq.each do |k|
-              map(k, lambda { self.fire(k) })
-          end
-      end
+          '<Escape>' => lambda { self.tomode('n') },
+      }
 
       map "<Alt-Escape>", lambda { self.toggle }
+      self.tomode('n')
   end
 end
 
