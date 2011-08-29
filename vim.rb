@@ -1,4 +1,6 @@
 class Vim < Plugin
+  requires_version '1.0.3'
+
   @oldmode = 'n'
   @mode = 'n'
   @maps = {}
