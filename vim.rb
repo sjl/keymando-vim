@@ -20,11 +20,12 @@ class Vim < Plugin
 
       except /iTerm/, /MacVim/, /Firefox/, /PeepOpen/, /Quicksilver/, /1Password/, /Alfred/ do
           oldmap.keys.each do |k|
+              self.growl('Unmapping: ' + k)
               unmap(k)
           end
 
           newmap.keys.each do |k|
-              map(k, lambda { Vim.maps[Vim.mode][k].call() })
+              map(k, newmap[k])
           end
       end
 
@@ -33,17 +34,16 @@ class Vim < Plugin
 
   def toggle
       if Vim.mode == 'disabled'
-          Vim.mode = Vim.oldmode
+          self.tomode(Vim.oldmode)
           self.growl('Keymando Vim mode enabled.')
       else
           Vim.oldmode = Vim.mode
-          Vim.mode = 'disabled'
+          self.tomode('disabled')
           self.growl('Keymando Vim mode disabled.')
       end
   end
 
   def after
-      Vim.maps['disabled'] = {}
       Vim.maps['n'] = {
           'h' => lambda { send("<Left>") },
           'j' => lambda { send("<Down>") },
@@ -54,6 +54,9 @@ class Vim < Plugin
           'b' => lambda { send("<Alt-Left>") },
           'e' => lambda { send("<Alt-Right>") },
           '0' => lambda { send("<Cmd-Left>") },
+
+          'gg' => lambda { send("<Cmd-Up>") },
+          'G' => lambda { send("<Cmd-Down>") },
 
           'i' => lambda { self.tomode('i') },
           'a' => lambda { self.tomode('i'); send("<Right>") },
@@ -97,8 +100,11 @@ class Vim < Plugin
 
           '<Escape>' => lambda { self.tomode('n') },
       }
+      Vim.maps['disabled'] = {}
 
       map "<Alt-Escape>", lambda { self.toggle }
+
+      Vim.mode = 'disabled'
       self.tomode('n')
   end
 end
