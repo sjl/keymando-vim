@@ -20,7 +20,6 @@ class Vim < Plugin
 
       except /iTerm/, /MacVim/, /Firefox/, /PeepOpen/, /Quicksilver/, /1Password/, /Alfred/ do
           oldmap.keys.each do |k|
-              self.growl('Unmapping: ' + k)
               unmap(k)
           end
 
