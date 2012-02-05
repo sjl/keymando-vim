@@ -79,7 +79,7 @@ class Vim < Plugin
       Vim.maps['i'] = {
           '<Ctrl-[>' => lambda { self.tomode('n') },
           '<Escape>' => lambda { self.tomode('n') },
-          'jk' => lambda { self.tomode('n') },
+          'jj' => lambda { self.tomode('n') },
       }
       Vim.maps['od'] = {
           'w'  => lambda { send("<Shift-Alt-Right><Cmd-x>"); self.tomode('n') },
