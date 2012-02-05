@@ -54,8 +54,8 @@ class Vim < Plugin
           'e' => lambda { send("<Alt-Right>") },
           '0' => lambda { send("<Cmd-Left>") },
 
-          'gg' => lambda { send("<Cmd-Up>") },
-          'G' => lambda { send("<Cmd-Down>") },
+          'gg' => lambda { send("<Home>") },
+          'G' => lambda { send("<End>") },
 
           'i' => lambda { self.tomode('i') },
           'a' => lambda { self.tomode('i'); send("<Right>") },
@@ -72,6 +72,9 @@ class Vim < Plugin
 
           'u' => lambda { send("<Cmd-z>") },
           '<Ctrl-R>' => lambda { send("<Shift-Cmd-z>") },
+
+          '<Ctrl-d>' => lambda {send("<PageDown>")},
+          '<Ctrl-u>' => lambda {send("<PageUp>")},
 
           'x' => lambda { send("<Shift-Right><Cmd-x>") },
           's' => lambda { send("<Shift-Right><Cmd-x>"); self.tomode('i') },
