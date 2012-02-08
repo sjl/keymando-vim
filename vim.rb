@@ -18,7 +18,7 @@ class Vim < Plugin
       oldmap = Vim.maps[Vim.mode]
       newmap = Vim.maps[m]
 
-      except /iTerm/, /MacVim/, /Firefox/, /Chrome/, /Safari/, /PeepOpen/, /Quicksilver/, /1Password/, /Alfred/ do
+      except /iTerm/, /MacVim/, /Firefox/, /Chrome/, /Safari/, /PeepOpen/, /Quicksilver/, /1Password/, /Alfred/, /Reeder/ do
           oldmap.keys.each do |k|
               unmap(k)
           end
